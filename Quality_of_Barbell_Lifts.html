@@ -63,15 +63,15 @@ img {
 <div id="header">
 <h1 class="title">Algorithm to Identify Quality of Barbell Lifts</h1>
 <h4 class="author"><em>Montserrat Perez</em></h4>
-<h4 class="date"><em>Friday, October 16, 2015</em></h4>
+<h4 class="date"><em>Friday, October 23, 2015</em></h4>
 </div>
 
 
 <div id="executive-summary" class="section level2">
 <h2>Executive Summary</h2>
 <p>A group of self-movement quantification enthusiasts were asked to perform barbell lifts correctly and incorrectly in 5 different ways. The goal of this project is to find an algorithm that correclty predicts the manner in which they did the exercise. There are five possible outcomes: Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes.</p>
-<p>We first tried an rpart tree but the accuracy of prediction value was only 56%. We then tried a random forest model and achieved 99.8% out of sample accuracy.The most important variables are num_window, roll_belt and pitch_belt.</p>
-<p>We finally applied the random forest model to the 20 test cases and achieved 100% accuracy.</p>
+<p>I first tried an rpart tree but the accuracy of prediction value was only 56%. I then tried a random forest model and achieved 99.8% out of sample accuracy.The most important variables are num_window, roll_belt and pitch_belt.</p>
+<p>I finally applied the random forest model to the 20 test cases and achieved 100% accuracy.</p>
 </div>
 <div id="exploratory-analysis-and-data-preprocessing" class="section level2">
 <h2>Exploratory Analysis and Data Preprocessing</h2>
@@ -223,8 +223,12 @@ Imp</code></pre>
 </div>
 <div id="apply-model-to-20-test-cases" class="section level2">
 <h2>Apply model to 20 test cases:</h2>
-<pre class="r"><code>pred2 &lt;-predict(tree1, test2)
-pred2</code></pre>
+<pre class="r"><code>pred2 &lt;-predict(tree1, test2)</code></pre>
+<pre><code>## Loading required package: randomForest</code></pre>
+<pre><code>## Warning: package 'randomForest' was built under R version 3.2.2</code></pre>
+<pre><code>## randomForest 4.6-12
+## Type rfNews() to see new features/changes/bug fixes.</code></pre>
+<pre class="r"><code>pred2</code></pre>
 <pre><code>##  [1] B A B A A E D B A A B C B A E E A B B B
 ## Levels: A B C D E</code></pre>
 <p>We achieve 100% accuracy</p>
