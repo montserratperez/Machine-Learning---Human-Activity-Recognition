@@ -1,0 +1,112 @@
+---
+title: "Algorithm to Identify Quality of Barbell Lifts"
+author: "Montserrat Perez"
+date: "Friday, October 16, 2015"
+output: html_document
+---
+
+## Executive Summary
+
+
+A group of self-movement quantification enthusiasts were asked to perform barbell lifts 
+correctly and incorrectly in 5 different ways. The goal of this project is to find an algorithm that correclty predicts the manner in which they did the exercise. There are five possible outcomes: Class A corresponds to the specified execution of the exercise, while the other 4 classes correspond to common mistakes.
+
+We first tried an rpart tree but the accuracy of prediction value was only 56%. We then tried a random forest model and achieved 99.8% out of sample accuracy.The most important variables are num_window, roll_belt and pitch_belt.
+
+We finally applied the random forest model to the 20 test cases and achieved 100% accuracy.
+
+
+
+## Exploratory Analysis and Data Preprocessing
+We first load the data and libraries
+
+```{r}
+library(caret)
+library(rattle)
+library(rpart.plot)
+library(ggplot2)
+training <-read.csv("training.csv", header=TRUE, sep=",")
+test <-read.csv("test.csv", header=TRUE, sep=",")
+```
+
+We first plot the data to get an idea of balance between the different classes. This shows that class A is the one with most data volume but the other 4 classes are fairly well balanced.
+
+
+```{r}
+qplot(training$classe, col="blue", main="Quantity of Data by Classe", xlab="Classes", ylab="Data Quantity")
+```
+
+The dataset has a large number of variables, 160 in all. On first exploration, the columns related to user name and timestamps can be removed.
+
+```{r}
+Remove<- c("X", "user_name", "raw_timestamp_part_1","raw_timestamp_part_2","cvtd_timestamp")
+training1 <- training[, !colnames(training) %in% Remove]
+test1 <- test[, !colnames(test) %in% Remove]
+```
+
+Some of the variables contain mostly NA values. These would need to be imputed or deleted from the test set for the prediction function to run. All columns have at least one non NA value, therefore eliminating columns does not appear to be the best option as this stage. Some rows  only have NA values,let's eliminate these rows with only NA values.
+
+```{r}
+Rownas <- (rowSums(is.na(training1)) == 0)
+training2 <- training1[!Rownas,]
+
+```
+
+Next we want to remove the variables that have little variability and thus are not good predictors.
+
+```{r}
+nzv <- nearZeroVar(training2)
+training3 <- training2[,-nzv]
+test2 <- test1[,-nzv]
+
+```
+
+We have ended up with 54 variables (out of 160)
+
+## Cross Validation
+
+We now partition the data by the "classe"" variable into training and test sets so that we can test for accuracy the model derived from the training set. We will use 75% of the data for the training set.
+
+```{r}
+set.seed(1001)
+inTrain <- createDataPartition(y= training3$classe, p=0.75, list=FALSE)
+training4 <-training3[inTrain,]
+test3 <-training3[-inTrain, ]
+
+```
+
+## Model building
+
+Given the large number of variables a tree based model would appear appropriate. Let's start with rpart
+
+```{r rpart_model, echo=TRUE, warning=FALSE, cache=TRUE, message=FALSE}
+tree <-train(classe ~., data=training4, method ="rpart")
+rattle::fancyRpartPlot(tree$finalModel)
+```
+
+Now let's apply the model to the test set to see how it performs out of sample.
+
+```{r}
+pred <-predict(tree, test3)
+confusionMatrix(pred, test3$classe)
+```
+
+We have only achieved 56% accuracy in the out of sample test which is only slightly better than random guessing. Let's try a random forest model to see if we can improve accuracy of prediction.
+
+```{r rf_model, echo=TRUE, warning=FALSE, cache=TRUE, message=FALSE}
+tree1 <-train(classe ~., data=training4, method ="rf", ntree=100)
+pred1 <-predict(tree1, test3)
+confusionMatrix(pred1, test3$classe)
+Imp <- (varImp(tree1))
+Imp
+```
+
+The random forest produces much more satisfactory results with an error rate of 0.015% (99.85% accuracy). The three most important variables are in order of descending importance: num_window, roll_belt and pitch_belt
+
+## Apply model to 20 test cases:
+
+```{r}
+pred2 <-predict(tree1, test2)
+pred2
+```
+We achieve 100% accuracy 
